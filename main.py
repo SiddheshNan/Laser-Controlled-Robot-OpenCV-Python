@@ -1,23 +1,24 @@
-
 import time
 import cv2
 import numpy as np
 import serial
 import os
+
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;0"
+
+camera_ip = '192.168.43.1:5554'
 
 __all__ = []
 arduino = serial.Serial('/dev/ttyUSB0', 9600)
-time.sleep(5)  # waiting the initialization...
+time.sleep(1)  # waiting the initialization..
 print("initialising")
-print cv2.__version__
 
 
 class ColourTracker:
     def __init__(self):
         cv2.namedWindow("ColourTrackerWindow")
 
-        self.capture = cv2.VideoCapture('rtsp://192.168.43.1:5554')
+        self.capture = cv2.VideoCapture('rtsp://' + camera_ip)
         self.scale_down = 4
 
     def run(self):
@@ -28,7 +29,7 @@ class ColourTracker:
         while True:
             time.sleep(0.05)  # waiting the initialization...
             f, orig_img = self.capture.read()
-            lower = np.array([160, 150, 160], np.uint8)
+            lower = np.array([155, 150, 160], np.uint8)
             upper = np.array([232, 255, 255], np.uint8)
             img = cv2.GaussianBlur(orig_img, (5, 5), 0)
             img = cv2.cvtColor(orig_img, cv2.COLOR_BGR2HSV)
