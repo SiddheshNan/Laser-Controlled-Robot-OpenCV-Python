@@ -3,13 +3,12 @@ import cv2
 import numpy as np
 import serial
 import os
+os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;udp"
 
-os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;0"
-
-camera_ip = '192.168.43.1:5554'
+camera_ip = 'rtsp://10.0.0.101:8080/video/h264'
 
 __all__ = []
-arduino = serial.Serial('/dev/ttyUSB0', 9600)
+#arduino = serial.Serial('/dev/ttyUSB0', 9600)
 time.sleep(1)  # waiting the initialization..
 print("initialising")
 
@@ -17,8 +16,10 @@ print("initialising")
 class ColourTracker:
     def __init__(self):
         cv2.namedWindow("ColourTrackerWindow")
-
-        self.capture = cv2.VideoCapture('rtsp://' + camera_ip)
+        self.capture = cv2.VideoCapture(camera_ip)
+        self.capture.set(3, 640)  # set frame width
+        self.capture.set(4, 480)  # set frame height
+        self.capture.set(cv2.CAP_PROP_FPS, 8)  # adjusting fps to 5
         self.scale_down = 4
 
     def run(self):
@@ -29,11 +30,10 @@ class ColourTracker:
         while True:
             time.sleep(0.05)  # waiting the initialization...
             f, orig_img = self.capture.read()
-            lower = np.array([155, 150, 160], np.uint8)
-            upper = np.array([232, 255, 255], np.uint8)
-            img = cv2.GaussianBlur(orig_img, (5, 5), 0)
+            lower = np.array([168, 51, 159], np.uint8)
+            upper = np.array([255, 250, 255], np.uint8)
             img = cv2.cvtColor(orig_img, cv2.COLOR_BGR2HSV)
-            img = cv2.resize(img, (len(orig_img[0]) / self.scale_down, len(orig_img) / self.scale_down))
+            img = cv2.resize(img, (int(len(orig_img[0]) / self.scale_down), int(len(orig_img) / self.scale_down)))
             red_binary = cv2.inRange(img, lower, upper)
             dilation = np.ones((15, 15), "uint8")
             red_binary = cv2.dilate(red_binary, dilation)
@@ -62,33 +62,33 @@ class ColourTracker:
                     # if Motor_Switch==1:
                     # print 'ON'
                     if centroid_x > 100:
-                        print 'Right'
-                        arduino.write('R')
+                        print('Right')
+                        #arduino.write('R'.encode())
                     elif centroid_x < 60:
-                        print 'Left'
-                        arduino.write('L')
+                        print ('Left')
+                        #arduino.write('L'.encode())
                     else:
-                        print 'Stop'
-                        arduino.write('S')
+                        print ('Stop')
+                        #arduino.write('S'.encode())
 
                     if centroid_y < 45:
-                        arduino.write('F')
-                        print 'up'
+                        #arduino.write('B'.encode())
+                        print ('up')
                     elif centroid_y > 75:
-                        arduino.write('B')
-                        print 'Down'
+                        #arduino.write('F'.encode())
+                        print ('Down')
                     else:
-                        arduino.write('S')
-                        print 'Stop'
+                        #arduino.write('S'.encode())
+                        print ('Stop')
 
-                    arduino.write('S')
-                    arduino.write('S')
+                   # arduino.write('S'.encode())
+                   # arduino.write('S'.encode())
 
                     cv2.drawContours(orig_img, [box], 0, (0, 0, 255), 2)
 
-            else:
-                arduino.write('Y')
-                arduino.write('X')
+            #else:
+               # arduino.write('S'.encode())
+               # arduino.write('S'.encode())
 
             cv2.imshow("ColourTrackerWindow", orig_img)
 
