@@ -9,7 +9,7 @@ os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;udp"
 camera_ip = 'http://10.0.0.105:8080/video/mjpeg'
 
 __all__ = []
-# arduino = serial.Serial('/dev/ttyUSB0', 9600)
+arduino = serial.Serial('/dev/ttyUSB0', 9600)
 time.sleep(1)  # waiting the initialization..
 print("initialising")
 
@@ -59,36 +59,33 @@ class ColourTracker:
 
                     centroid_x = int(moment['m10'] / moment['m00'])
                     centroid_y = int(moment['m01'] / moment['m00'])
-                    # if Motor_Switch==1:
-                    # print 'ON'
+                    
                     if centroid_x > 100:
                         print('Right')
-                        # arduino.write('R'.encode())
+                        arduino.write('R'.encode())
                     elif centroid_x < 60:
                         print ('Left')
-                        # arduino.write('L'.encode())
+                        arduino.write('L'.encode())
                     else:
                         print ('Stop')
-                        # arduino.write('S'.encode())
+                        arduino.write('S'.encode())
 
                     if centroid_y < 45:
-                        # arduino.write('B'.encode())
+                        arduino.write('B'.encode())
                         print ('up')
                     elif centroid_y > 75:
-                        # arduino.write('F'.encode())
+                        arduino.write('F'.encode())
                         print ('Down')
                     else:
-                        # arduino.write('S'.encode())
+                        arduino.write('S'.encode())
                         print ('Stop')
 
-                    # arduino.write('S'.encode())
-                    # arduino.write('S'.encode())
+                    arduino.write('S'.encode())
 
                     cv2.drawContours(orig_img, [box], 0, (0, 0, 255), 2)
 
-            # else:
-            # arduino.write('S'.encode())
-            # arduino.write('S'.encode())
+            else:
+                arduino.write('S'.encode())
 
             cv2.imshow("ColourTrackerWindow", orig_img)
 
